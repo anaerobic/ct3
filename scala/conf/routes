@@ -3,5 +3,5 @@
 # ~~~~
 
 # Home page
-GET        /             controllers.Application.balance(path="")
-GET        /*path        controllers.Application.balance(path)
+GET        /             controllers.Proxy.balance(path="")
+GET        /*path        controllers.Proxy.balance(path)
