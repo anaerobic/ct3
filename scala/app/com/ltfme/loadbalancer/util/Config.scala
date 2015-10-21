@@ -8,7 +8,7 @@ import scala.collection.JavaConversions._
  * Date: 10/20/15
  * Time: 5:30 PM
  */
-trait Config {
+object Config {
   val config = ConfigFactory.load("proxy")
 
   lazy val servers = config.getConfigList("servers").map {
@@ -19,6 +19,5 @@ trait Config {
 
 }
 
-object Config extends Config
 
 case class Server(name:String, host:String)

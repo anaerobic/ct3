@@ -12,9 +12,9 @@ import scala.util.Random
  */
 
 @ImplementedBy(classOf[RandomStrategy])
-sealed abstract class StickyStrategy extends Config {
+sealed abstract class StickyStrategy {
 
-  protected val serversByNameIndex = Map(servers.map(s => (s.name, s)):_*)
+  protected val serversByNameIndex = Map(Config.servers.map(s => (s.name, s)):_*)
 
   final def server(name:String) = serversByNameIndex.get(name)
 
@@ -25,6 +25,6 @@ sealed abstract class StickyStrategy extends Config {
 @Singleton
 class RandomStrategy extends StickyStrategy {
   override def selectServer: Server = {
-    servers(Random.nextInt(Config.servers.size))
+    Config.servers(Random.nextInt(Config.servers.size))
   }
 }

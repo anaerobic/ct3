@@ -1,6 +1,4 @@
 import com.ltfme.loadbalancer.util.Config
-import com.typesafe.config.{Config => TConfig}
-import com.typesafe.config.ConfigFactory
 import org.specs2.mutable._
 import org.specs2.runner._
 import org.junit.runner._
@@ -9,7 +7,10 @@ import play.api.mvc.Cookie
 import play.api.test._
 import play.api.test.Helpers._
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Future, Await}
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Add your spec here.
@@ -17,17 +18,18 @@ import scala.concurrent.{Future, Await}
  * For more information, consult the wiki.
  */
 @RunWith(classOf[JUnitRunner])
-class ProxySpec extends Specification with Config {
-  override val config: TConfig = ConfigFactory.load("test-proxy")
+class ProxySpec extends Specification {
+
+  implicit val timeout = 5 seconds
 
   "Application" should {
 
-    "shoudl redirect to google" in new WithApplication{
-      val res = route(FakeRequest(GET, "/").withCookies(Cookie(cookieName, "second")))
-      res.get.map(r => {
-        println(s"HEADERS: ${r.header}")
-        println(s"HEADERS: ${contentAsString(Future(r))}")
-      })
+    "should reverse proxy google" in new WithApplication{
+      println("START")
+      val fut = route(FakeRequest(GET, "/").withCookies(Cookie(Config.cookieName, "second"))).get
+      val res = Await.result(fut, timeout)
+      res.header.headers.getOrElse("server", "") equals "gws"
+      contentAsString(fut) must contain ("Google Search")
     }
 
 //    "send 404 on a bad request" in new WithApplication{

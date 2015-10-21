@@ -2,21 +2,21 @@ package com.ltfme.loadbalancer
 
 import javax.inject.{Inject, Singleton}
 
-import com.ltfme.loadbalancer.util.{Server, Config}
-import play.api.http.{HeaderNames, HttpProtocol, Status}
+import com.ltfme.loadbalancer.util.{Config, Server}
+import play.api.http.HeaderNames
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.ws.WSClient
 import play.api.mvc._
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * User: ilya
  * Date: 10/21/15
  * Time: 9:52 AM
  */
-sealed trait ReverseProxy[REQ, RES] extends Config {
+sealed trait ReverseProxy[REQ, RES] {
 
   def proxyToServer(request: REQ): RES
 
@@ -36,7 +36,7 @@ sealed trait ReverseProxy[REQ, RES] extends Config {
 class PlayReverseProxyWithWS @Inject()(ws: WSClient, stickyStrategy: StickyStrategy) extends ReverseProxy[Request[RawBuffer], Future[Result]] {
   override def proxyToServer(request: Request[RawBuffer]): Future[Result] = {
 
-    val serverBoundAndReady = request.cookies.get(cookieName) match {
+    val serverBoundAndReady = request.cookies.get(Config.cookieName) match {
       case Some(cookie) => stickyStrategy.server(cookie.value)
       case None => None
     }
@@ -46,7 +46,7 @@ class PlayReverseProxyWithWS @Inject()(ws: WSClient, stickyStrategy: StickyStrat
       case None =>
         println(s"REDIRECTING TO: ${url(request)}")
         Future(Results.Found(url(request)).
-            withCookies(Cookie(cookieName, stickyStrategy.selectServer.name)))
+            withCookies(Cookie(Config.cookieName, stickyStrategy.selectServer.name)))
     }
   }
 
