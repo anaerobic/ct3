@@ -1,0 +1,7 @@
+http-port: 80
+https-port: 443
+servers:
+#  - name: master
+#    host: https://www.google.com:443
+  - name: secondary
+    host: https://www.google.com:443
