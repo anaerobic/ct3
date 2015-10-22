@@ -1,16 +1,14 @@
 import com.ltfme.loadbalancer.util.Config
+import org.junit.runner._
 import org.specs2.mutable._
 import org.specs2.runner._
-import org.junit.runner._
+import play.api.libs.ws.WS
 import play.api.mvc.Cookie
-
-import play.api.test._
 import play.api.test.Helpers._
+import play.api.test._
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Future, Await}
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Add your spec here.
@@ -24,25 +22,47 @@ class ProxySpec extends Specification {
 
   "Application" should {
 
-    "should reverse proxy google" in new WithApplication{
-      println("START")
-      val fut = route(FakeRequest(GET, "/").withCookies(Cookie(Config.cookieName, "second"))).get
-      val res = Await.result(fut, timeout)
-      res.header.headers.getOrElse("server", "") equals "gws"
-      contentAsString(fut) must contain ("Google Search")
+    "should reverse proxy google" in new WithApplication {
+      route(FakeRequest(GET, "/").withCookies(Cookie(Config.cookieName, "second"))) match {
+        case Some(r) =>
+          headers(r).getOrElse("server", "") must beEqualTo("gws")
+          contentAsString(r) must contain("Google Search")
+        case None => failure
+      }
+
+      var res = Await.result(
+        WS.url("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png").get(), timeout)
+
+      route(FakeRequest(GET, "/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png").
+          withCookies(Cookie(Config.cookieName, "second"))) match {
+        case Some(r) =>
+          headers(r).getOrElse("server", "") must beEqualTo("sffe")
+          contentAsBytes(r) must beEqualTo(res.bodyAsBytes)
+        case None => failure
+      }
     }
 
-//    "send 404 on a bad request" in new WithApplication{
-//      route(FakeRequest(GET, "/boum")) must beSome.which (status(_) == NOT_FOUND)
-//    }
-//
-//    "render the index page" in new WithApplication{
-//      val home = route(FakeRequest(GET, "/")).get
-//
-//      status(home) must equalTo(OK)
-//      contentType(home) must beSome.which(_ == "text/html")
-//      contentAsString(home) must contain ("Your new application is ready.")
-//    }
+
+    "should reverse proxy w3" in new WithApplication {
+      route(FakeRequest(GET, "/").withCookies(Cookie(Config.cookieName, "first"))) match {
+        case Some(r) =>
+          headers(r).getOrElse("server", "") must beEqualTo("Apache/2")
+          contentAsString(r) must contain("Contact W3C")
+        case None => failure
+      }
+
+      var res = Await.result(
+        WS.url("https://www.w3.org/2008/site/images/logo-w3c-mobile-lg").get(), timeout)
+
+      route(FakeRequest(GET, "/2008/site/images/logo-w3c-mobile-lg").
+          withCookies(Cookie(Config.cookieName, "first"))) match {
+        case Some(r) =>
+          headers(r).getOrElse("server", "") must beEqualTo("Apache/2")
+          contentAsBytes(r) must beEqualTo(res.bodyAsBytes)
+        case None => failure
+      }
+    }
+
   }
 
 }

@@ -77,7 +77,7 @@ class PlayReverseProxyWithWS @Inject()(ws: WSClient, stickyStrategy: StickyStrat
           case (k, v) => v.map((k, _))
         }
 
-        println(s"HEADERS: ${resHeaders}")
+        println(s"HEADERS: $resHeaders")
         new Results.Status(r.status).chunked(Enumerator(r.bodyAsBytes)).withHeaders(resHeaders: _*)
     }
   }
