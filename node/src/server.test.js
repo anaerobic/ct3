@@ -4,8 +4,8 @@ import config from 'config';
 
 describe('server', () => {
 
-    beforeEach(()=> {
-
+    afterAll(()=> {
+      exit();
     });
 
     var getRequest = function (cookie, successCallback) {
@@ -25,14 +25,14 @@ describe('server', () => {
 
         return xhr;
     };
-    
+
     it('should reverse proxy to w3c', done => {
         setTimeout(function () {
         }, 0);
 
-        var xhr = getRequest('LB_PROXY_SERVER=first', function () {
+        var xhr = getRequest('LB_STICKY=first', function () {
 
-          expect(xhr.getResponseHeader('server')).toContain('Apache/2');
+          expect(xhr.getResponseHeader('server')).toEqual('Apache/2');
           expect(xhr.responseText).toContain('Contact W3C');
           done();
         });
@@ -44,9 +44,9 @@ describe('server', () => {
         setTimeout(function () {
         }, 0);
 
-        var xhr = getRequest('LB_PROXY_SERVER=second', function () {
+        var xhr = getRequest('LB_STICKY=second', function () {
 
-          expect(xhr.getResponseHeader('server')).toContain('sffe');
+          expect(xhr.getResponseHeader('server')).toEqual('gws');
           expect(xhr.responseText).toContain('Google Search');
           done();
         });
