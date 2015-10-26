@@ -1,5 +1,6 @@
 var gulp = require('gulp'),
   babel = require('gulp-babel'),
+  exit = require('gulp-exit'),
   nodemon = require('gulp-nodemon'),
   jasmine = require('gulp-jasmine');
 
@@ -9,20 +10,20 @@ gulp.task('build', function () {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('test', ['build'], function () {
-    return gulp.src('dist/**/*.test.js')
-        .pipe(jasmine());
-});
-
-gulp.task('start', function () {
+gulp.task('start', ['build'], function () {
   nodemon({
-    script: 'dist/src/*.js',
+    script: 'dist/src/server.js',
     ignore: ['dist/**/*.*'],
     ext: 'js yml',
     env: { 'NODE_ENV': 'development' },
-    tasks: ['build', 'test']
+    tasks: ['build']
   })
 });
 
+gulp.task('test', ['build'], function () {
+    return gulp.src('dist/**/*.test.js')
+        .pipe(jasmine())
+        .pipe(exit());
+});
 
-gulp.task('default', ['build', 'test', 'start']);
+gulp.task('default', ['build', 'start']);

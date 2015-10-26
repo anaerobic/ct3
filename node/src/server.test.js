@@ -4,10 +4,6 @@ import config from 'config';
 
 describe('server', () => {
 
-    afterAll(()=> {
-      exit();
-    });
-
     var getRequest = function (cookie, successCallback) {
 
         var xhr = new ajax.XMLHttpRequest();
