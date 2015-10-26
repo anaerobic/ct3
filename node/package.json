@@ -6,10 +6,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "directories": {
-    "dist": "./dist",
-    "lib": "./lib"
-  },
   "author": "Ilya Sterin",
   "license": "SEE LICENSE IN license.txt",
   "dependencies": {
